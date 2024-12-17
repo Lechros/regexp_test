@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/BurntSushi/rure-go"
 	"github.com/GRbit/go-pcre"
-	"github.com/flier/gohs/hyperscan"
+	//"github.com/flier/gohs/hyperscan"
 	"github.com/wasilibs/go-re2"
 	"log"
 	"os"
@@ -58,13 +58,13 @@ func Re2MatchAll(pattern string) {
 	}
 }
 
-func HyperScanMatchAll(pattern string) {
-	p := hyperscan.NewPattern(pattern, hyperscan.Caseless)
-	db, _ := hyperscan.NewBlockDatabase(p)
-	for _, name := range names {
-		db.MatchString(name)
-	}
-}
+//func HyperScanMatchAll(pattern string) {
+//	p := hyperscan.NewPattern(pattern, hyperscan.Caseless)
+//	db, _ := hyperscan.NewBlockDatabase(p)
+//	for _, name := range names {
+//		db.MatchString(name)
+//	}
+//}
 
 func init() {
 	data, err := os.ReadFile("gear-data.json")

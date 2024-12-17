@@ -61,16 +61,16 @@ func BenchmarkRe2MatchAll(b *testing.B) {
 	}
 }
 
-func BenchmarkHyperScanMatchAll(b *testing.B) {
-	for _, search := range searches {
-		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
-		b.Run(search+"/"+pattern+"/", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				HyperScanMatchAll(pattern)
-			}
-		})
-	}
-}
+//func BenchmarkHyperScanMatchAll(b *testing.B) {
+//	for _, search := range searches {
+//		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
+//		b.Run(search+"/"+pattern+"/", func(b *testing.B) {
+//			for i := 0; i < b.N; i++ {
+//				HyperScanMatchAll(pattern)
+//			}
+//		})
+//	}
+//}
 
 var groupPatterns = []string{
 	"(ㅇ|[아-잏]).*?(ㅋ|[카-킿]).*?(ㅇ|[아-잏]).*?(ㅅ|[사-싷]).*?(ㅇ|[아-잏]).*?(ㄷ|[다-딯]).*?_.*?(ㅇ|[아-잏])",
