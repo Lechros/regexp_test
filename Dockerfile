@@ -3,7 +3,7 @@ FROM rust AS rust-builder
 
 WORKDIR /app
 RUN git clone --depth 1 https://github.com/rust-lang/regex
-RUN cargo build --release --target x86_64-unknown-linux-gnu --manifest-path ./regex/regex-capi/Cargo.toml
+RUN cargo build --release --manifest-path ./regex/regex-capi/Cargo.toml
 
 FROM golang:1.23 AS go-builder
 
