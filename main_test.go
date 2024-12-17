@@ -20,7 +20,7 @@ var searches = []string{
 func BenchmarkStandardMatchAll(b *testing.B) {
 	for _, search := range searches {
 		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
-		b.Run(search+"/"+pattern+"/", func(b *testing.B) {
+		b.Run(search, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				StandardMatchAll(pattern)
 			}
@@ -31,7 +31,7 @@ func BenchmarkStandardMatchAll(b *testing.B) {
 func BenchmarkRuReMatchAll(b *testing.B) {
 	for _, search := range searches {
 		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
-		b.Run(search+"/"+pattern+"/", func(b *testing.B) {
+		b.Run(search, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				RuReMatchAll(pattern)
 			}
@@ -42,7 +42,7 @@ func BenchmarkRuReMatchAll(b *testing.B) {
 func BenchmarkPcreMatchAll(b *testing.B) {
 	for _, search := range searches {
 		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
-		b.Run(search+"/"+pattern+"/", func(b *testing.B) {
+		b.Run(search, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				PcreMatchAll(pattern)
 			}
@@ -53,7 +53,7 @@ func BenchmarkPcreMatchAll(b *testing.B) {
 func BenchmarkRe2MatchAll(b *testing.B) {
 	for _, search := range searches {
 		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
-		b.Run(search+"/"+pattern+"/", func(b *testing.B) {
+		b.Run(search, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				Re2MatchAll(pattern)
 			}
@@ -64,7 +64,7 @@ func BenchmarkRe2MatchAll(b *testing.B) {
 //func BenchmarkHyperScanMatchAll(b *testing.B) {
 //	for _, search := range searches {
 //		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
-//		b.Run(search+"/"+pattern+"/", func(b *testing.B) {
+//		b.Run(search, func(b *testing.B) {
 //			for i := 0; i < b.N; i++ {
 //				HyperScanMatchAll(pattern)
 //			}
