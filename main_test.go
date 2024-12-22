@@ -28,12 +28,34 @@ func BenchmarkStandardMatchAll(b *testing.B) {
 	}
 }
 
+func BenchmarkStandardConcatMatchAll(b *testing.B) {
+	for _, search := range searches {
+		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
+		b.Run(search, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				StandardConcatMatchAll(pattern)
+			}
+		})
+	}
+}
+
 func BenchmarkRuReMatchAll(b *testing.B) {
 	for _, search := range searches {
 		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
 		b.Run(search, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				RuReMatchAll(pattern)
+			}
+		})
+	}
+}
+
+func BenchmarkRuReConcatMatchAll(b *testing.B) {
+	for _, search := range searches {
+		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
+		b.Run(search, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				RuReConcatMatchAll(pattern)
 			}
 		})
 	}

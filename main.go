@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/BurntSushi/rure-go"
 	"github.com/GRbit/go-pcre"
+	"slices"
 	//"github.com/flier/gohs/hyperscan"
 	"github.com/wasilibs/go-re2"
 	"log"
@@ -14,6 +15,9 @@ import (
 
 var gears map[string]json.RawMessage
 var names map[string]string
+var concatString string
+var concatStartIndex []int
+var concatIds []string
 
 func StandardMatchAll(pattern string) {
 	regex := regexp.MustCompile("(?i)" + pattern)
@@ -22,10 +26,16 @@ func StandardMatchAll(pattern string) {
 	}
 }
 
-func StandardFindGroups(pattern string) {
+func StandardConcatMatchAll(pattern string) {
 	regex := regexp.MustCompile("(?i)" + pattern)
-	for _, name := range names {
-		regex.FindAllStringSubmatchIndex(name, -1)
+	matches := regex.FindAllStringIndex(concatString, -1)
+	for _, match := range matches {
+		index, found := slices.BinarySearch(concatStartIndex, match[0])
+		if found { // Matched start of name
+			_ = concatIds[index]
+		} else { // Matched middle of name, index will be 1 bigger
+			_ = concatIds[index-1]
+		}
 	}
 }
 
@@ -36,11 +46,19 @@ func RuReMatchAll(pattern string) {
 	}
 }
 
-func RuReFindGroups(pattern string) {
+func RuReConcatMatchAll(pattern string) {
 	regex := rure.MustCompile("(?i)" + pattern)
-	captures := regex.NewCaptures()
-	for _, name := range names {
-		regex.Captures(captures, name)
+	matches := regex.FindAll(concatString)
+	for i, match := range matches {
+		if i%2 != 0 {
+			continue
+		}
+		index, found := slices.BinarySearch(concatStartIndex, match)
+		if found { // Matched start of name
+			_ = concatIds[index]
+		} else { // Matched middle of name, index will be 1 bigger
+			_ = concatIds[index-1]
+		}
 	}
 }
 
@@ -66,6 +84,21 @@ func Re2MatchAll(pattern string) {
 //	}
 //}
 
+func StandardFindGroups(pattern string) {
+	regex := regexp.MustCompile("(?i)" + pattern)
+	for _, name := range names {
+		regex.FindAllStringSubmatchIndex(name, -1)
+	}
+}
+
+func RuReFindGroups(pattern string) {
+	regex := rure.MustCompile("(?i)" + pattern)
+	captures := regex.NewCaptures()
+	for _, name := range names {
+		regex.Captures(captures, name)
+	}
+}
+
 func init() {
 	data, err := os.ReadFile("gear-data.json")
 	if err != nil {
@@ -77,13 +110,23 @@ func init() {
 	}
 
 	names = make(map[string]string, len(gears))
+	builder := strings.Builder{}
 	for id, gearData := range gears {
 		var gear map[string]interface{}
 		if err := json.Unmarshal(gearData, &gear); err != nil {
 			log.Fatal(err)
 		}
-		names[id] = strings.ToLower(gear["name"].(string))
+		name := gear["name"].(string)
+		names[id] = strings.ToLower(name)
+
+		// concat
+		builder.WriteString(name)
+		builder.WriteRune('\n')
+		concatStartIndex = append(concatStartIndex, builder.Len())
+		concatIds = append(concatIds, id)
 	}
+	concatString = builder.String()
+	concatString = concatString[:len(concatString)-1]
 }
 
 func main() {
