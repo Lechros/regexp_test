@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"reflect"
+	"slices"
+	"testing"
+)
 import "github.com/Lechros/hangul_regexp"
 
 var searches = []string{
@@ -15,6 +19,21 @@ var searches = []string{
 	"에광",
 	"ㅇㅋㅇㅅㅇㄷ ㅇ",
 	"아케인셰이드 아처",
+}
+
+func TestConcatMatchAll(t *testing.T) {
+	for _, search := range searches {
+		pattern, _ := hangul_regexp.GetPattern(search, false, true, true)
+		t.Run(search, func(t *testing.T) {
+			expected := StandardMatchAll(pattern)
+			actual := StandardConcatMatchAll(pattern)
+			slices.Sort(expected)
+			slices.Sort(actual)
+			if !reflect.DeepEqual(expected, actual) {
+				t.Errorf("\nExpected: %v\nActual: %v", expected, actual)
+			}
+		})
+	}
 }
 
 func BenchmarkStandardMatchAll(b *testing.B) {
@@ -99,22 +118,22 @@ var groupPatterns = []string{
 	"(에).*?(?:(광)|(과).*?(ㅇ|[아-잏]))",
 }
 
-func BenchmarkStandardFindGroups(b *testing.B) {
-	for _, pattern := range groupPatterns {
-		b.Run(pattern, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				StandardFindGroups(pattern)
-			}
-		})
-	}
-}
+//func BenchmarkStandardFindGroups(b *testing.B) {
+//	for _, pattern := range groupPatterns {
+//		b.Run(pattern, func(b *testing.B) {
+//			for i := 0; i < b.N; i++ {
+//				StandardFindGroups(pattern)
+//			}
+//		})
+//	}
+//}
 
-func BenchmarkRuReFindGroups(b *testing.B) {
-	for _, pattern := range groupPatterns {
-		b.Run(pattern, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				RuReFindGroups(pattern)
-			}
-		})
-	}
-}
+//func BenchmarkRuReFindGroups(b *testing.B) {
+//	for _, pattern := range groupPatterns {
+//		b.Run(pattern, func(b *testing.B) {
+//			for i := 0; i < b.N; i++ {
+//				RuReFindGroups(pattern)
+//			}
+//		})
+//	}
+//}

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/BurntSushi/rure-go"
 	"github.com/GRbit/go-pcre"
+	"github.com/wasilibs/go-re2"
 	"slices"
 	//"github.com/flier/gohs/hyperscan"
-	"github.com/wasilibs/go-re2"
 	"log"
 	"os"
 	"regexp"
@@ -19,61 +19,85 @@ var concatString string
 var concatStartIndex []int
 var concatIds []string
 
-func StandardMatchAll(pattern string) {
+func StandardMatchAll(pattern string) []string {
 	regex := regexp.MustCompile("(?i)" + pattern)
-	for _, name := range names {
-		regex.MatchString(name)
+	result := make([]string, 0, 10)
+	for id, name := range names {
+		if regex.MatchString(name) {
+			result = append(result, id)
+		}
 	}
+	return result
 }
 
-func StandardConcatMatchAll(pattern string) {
-	regex := regexp.MustCompile("(?i)" + pattern)
+func StandardConcatMatchAll(pattern string) []string {
+	regex := regexp.MustCompile("(?im)" + "^.*?" + pattern + ".*?$")
+	result := make([]string, 0, 10)
 	matches := regex.FindAllStringIndex(concatString, -1)
 	for _, match := range matches {
 		index, found := slices.BinarySearch(concatStartIndex, match[0])
-		if found { // Matched start of name
-			_ = concatIds[index]
-		} else { // Matched middle of name, index will be 1 bigger
-			_ = concatIds[index-1]
+		if !found { // Matched middle of name, index will be 1 bigger
+			index--
+		}
+		id := concatIds[index]
+		if len(result) == 0 || result[len(result)-1] != id {
+			result = append(result, id)
 		}
 	}
+	return result
 }
 
-func RuReMatchAll(pattern string) {
+func RuReMatchAll(pattern string) []string {
 	regex := rure.MustCompile("(?i)" + pattern)
-	for _, name := range names {
-		regex.IsMatch(name)
+	result := make([]string, 0, 10)
+	for id, name := range names {
+		if regex.IsMatch(name) {
+			result = append(result, id)
+		}
 	}
+	return result
 }
 
-func RuReConcatMatchAll(pattern string) {
-	regex := rure.MustCompile("(?i)" + pattern)
+func RuReConcatMatchAll(pattern string) []string {
+	regex := rure.MustCompile("(?im)" + "^.*?" + pattern + ".*?$")
+	result := make([]string, 0, 10)
 	matches := regex.FindAll(concatString)
 	for i, match := range matches {
 		if i%2 != 0 {
 			continue
 		}
 		index, found := slices.BinarySearch(concatStartIndex, match)
-		if found { // Matched start of name
-			_ = concatIds[index]
-		} else { // Matched middle of name, index will be 1 bigger
-			_ = concatIds[index-1]
+		if !found { // Matched middle of name, index will be 1 bigger
+			index--
+		}
+		id := concatIds[index]
+		if len(result) == 0 || result[len(result)-1] != id {
+			result = append(result, id)
 		}
 	}
+	return result
 }
 
-func PcreMatchAll(pattern string) {
+func PcreMatchAll(pattern string) []string {
 	regex := pcre.MustCompile(pattern, pcre.CASELESS)
-	for _, name := range names {
-		regex.MatchStringWFlags(name, pcre.CASELESS)
+	result := make([]string, 0, 10)
+	for id, name := range names {
+		if regex.MatchStringWFlags(name, pcre.CASELESS) {
+			result = append(result, id)
+		}
 	}
+	return result
 }
 
-func Re2MatchAll(pattern string) {
+func Re2MatchAll(pattern string) []string {
 	regex := re2.MustCompile(pattern)
-	for _, name := range names {
-		regex.MatchString(name)
+	result := make([]string, 0, 10)
+	for id, name := range names {
+		if regex.MatchString(name) {
+			result = append(result, id)
+		}
 	}
+	return result
 }
 
 //func HyperScanMatchAll(pattern string) {
@@ -84,20 +108,20 @@ func Re2MatchAll(pattern string) {
 //	}
 //}
 
-func StandardFindGroups(pattern string) {
-	regex := regexp.MustCompile("(?i)" + pattern)
-	for _, name := range names {
-		regex.FindAllStringSubmatchIndex(name, -1)
-	}
-}
-
-func RuReFindGroups(pattern string) {
-	regex := rure.MustCompile("(?i)" + pattern)
-	captures := regex.NewCaptures()
-	for _, name := range names {
-		regex.Captures(captures, name)
-	}
-}
+//func StandardFindGroups(pattern string) {
+//	regex := regexp.MustCompile("(?i)" + pattern)
+//	for _, name := range names {
+//		regex.FindAllStringSubmatchIndex(name, -1)
+//	}
+//}
+//
+//func RuReFindGroups(pattern string) {
+//	regex := rure.MustCompile("(?i)" + pattern)
+//	captures := regex.NewCaptures()
+//	for _, name := range names {
+//		regex.Captures(captures, name)
+//	}
+//}
 
 func init() {
 	data, err := os.ReadFile("gear-data.json")
@@ -120,10 +144,10 @@ func init() {
 		names[id] = strings.ToLower(name)
 
 		// concat
-		builder.WriteString(name)
-		builder.WriteRune('\n')
 		concatStartIndex = append(concatStartIndex, builder.Len())
 		concatIds = append(concatIds, id)
+		builder.WriteString(name)
+		builder.WriteRune('\n')
 	}
 	concatString = builder.String()
 	concatString = concatString[:len(concatString)-1]
